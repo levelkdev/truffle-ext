@@ -1,0 +1,29 @@
+{
+  "name": "trest",
+  "version": "0.1.0",
+  "author": {
+    "email": "mfcalvanese@gmail.com",
+    "name": "Mike Calvanese"
+  },
+  "main": "src/main.js",
+  "keywords": [
+    "truffle"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "standard": "^10.0.2"
+  },
+  "devDependencies": {
+    "jest": "^19.0.2"
+  },
+  "scripts": {
+    "check": "standard",
+    "test": "jest"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "trest": "<rootDir>/src/main.js"
+    }
+  }
+}
