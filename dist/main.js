@@ -1,66 +1,103 @@
-import _ from 'lodash'
-import {
-  constantFunctionNames,
-  transactionFunctionNames
-} from './abiParser'
-import formatState from './formatState'
+'use strict';
 
-async function contractState (contractInstance) {
-  const fnNames = constantFunctionNames(contractInstance.abi)
-  const results = await Promise.all(_.map(fnNames, (fnName) => {
-    return contractInstance[fnName].call()
-  }))
-  let state = {}
-  for (let i = 0; i < fnNames.length; i++) {
-    state[fnNames[i]] = results[i]
-  }
-  return state
-}
+Object.defineProperty(exports, '__esModule', { value: true });
 
-function wrapTxFunction (contractInstance, fnName) {
-  const txFn = contractInstance[fnName]
-  return async function () {
-    let tx = await txFn.apply(this, Array.prototype.slice.call(arguments))
-    const state = await contractState(contractInstance)
-    return _.assign(tx, { state })
-  }
-}
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-function transactionFns (contractInstance) {
-  const txFnNames = transactionFunctionNames(contractInstance.abi)
-  let txFns = {}
-  _.forEach(txFnNames, (fnName) => {
-    txFns[fnName] = wrapTxFunction(contractInstance, fnName)
-  })
-  return txFns
-}
+var _ = _interopDefault(require('lodash'));
 
-function wrapContractInstance (contractInstance, state) {
-  return _.assign(
-    contractInstance,
-    transactionFns(contractInstance),
-    {
-      state: state,
-      formattedState: formatState(contractInstance.abi, state)
+const constantFunctionNames = abi => {
+  return _.map(_.filter(abi, { type: 'function', constant: true }), o => o.name);
+};
+
+const transactionFunctionNames = abi => {
+  return _.map(_.filter(abi, { type: 'function', constant: false }), o => o.name);
+};
+
+const getOutputType = (abi, fnName) => {
+  return _.find(abi, { name: fnName }).outputs[0].type;
+};
+
+var formatters = {
+  uint256: v => v.toNumber(),
+  uint: v => v.toNumber(),
+  address: v => v,
+  bool: v => v
+};
+
+var formatState = ((abi, rawState) => {
+  let formattedState = {};
+  _.forEach(rawState, (val, prop) => {
+    const outputType = getOutputType(abi, prop);
+    const formatter = formatters[outputType];
+    if (!formatter) {
+      throw new Error(`No formatter found for ${outputType}`);
     }
-  )
+    formattedState[prop] = formatter(val);
+  });
+  return formattedState;
+});
+
+let contractState = (() => {
+  var _ref = _asyncToGenerator(function* (contractInstance) {
+    const fnNames = constantFunctionNames(contractInstance.abi);
+    const results = yield Promise.all(_.map(fnNames, function (fnName) {
+      return contractInstance[fnName].call();
+    }));
+    let state = {};
+    for (let i = 0; i < fnNames.length; i++) {
+      state[fnNames[i]] = results[i];
+    }
+    return state;
+  });
+
+  return function contractState(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function wrapTxFunction(contractInstance, fnName) {
+  const txFn = contractInstance[fnName];
+  return _asyncToGenerator(function* () {
+    let tx = yield txFn.apply(this, Array.prototype.slice.call(arguments));
+    const state = yield contractState(contractInstance);
+    return _.assign(tx, { state });
+  });
 }
 
-function newContractFn (newFn) {
-  return async function () {
-    const c = await newFn.apply(this, Array.prototype.slice.call(arguments))
-    const state = await contractState(c)
-    return wrapContractInstance(c, state)
-  }
+function transactionFns(contractInstance) {
+  const txFnNames = transactionFunctionNames(contractInstance.abi);
+  let txFns = {};
+  _.forEach(txFnNames, fnName => {
+    txFns[fnName] = wrapTxFunction(contractInstance, fnName);
+  });
+  return txFns;
 }
 
-function wrapContractArtifact (contractArtifact) {
-  contractArtifact.new = newContractFn(contractArtifact.new)
-  return contractArtifact
+function wrapContractInstance(contractInstance, state) {
+  return _.assign(contractInstance, transactionFns(contractInstance), {
+    state: state,
+    formattedState: formatState(contractInstance.abi, state)
+  });
 }
 
-export function requireContract (contractArtifact) {
-  return wrapContractArtifact(contractArtifact)
+function newContractFn(newFn) {
+  return _asyncToGenerator(function* () {
+    const c = yield newFn.apply(this, Array.prototype.slice.call(arguments));
+    const state = yield contractState(c);
+    return wrapContractInstance(c, state);
+  });
+}
+
+function wrapContractArtifact(contractArtifact) {
+  contractArtifact.new = newContractFn(contractArtifact.new);
+  return contractArtifact;
+}
+
+function requireContract(contractArtifact) {
+  return wrapContractArtifact(contractArtifact);
 }
 
 /*
@@ -226,3 +263,6 @@ module.exports.tx = async (transactionPromise) => {
   }
 }
 */
+
+exports.requireContract = requireContract;
+//# sourceMappingURL=main.js.map

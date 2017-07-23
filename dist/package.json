@@ -1,0 +1,24 @@
+{
+  "name": "trestjs",
+  "version": "0.1.1",
+  "author": {
+    "email": "mfcalvanese@gmail.com",
+    "name": "Mike Calvanese"
+  },
+  "main": "main.js",
+  "keywords": [
+    "truffle"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "sazerac": "^0.4.1",
+    "standard": "^10.0.2",
+    "zeppelin-solidity": "^1.2.0"
+  },
+  "standard": {
+    "ignore": [
+      "bin/**"
+    ]
+  }
+}
