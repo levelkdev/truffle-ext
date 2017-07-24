@@ -8,19 +8,30 @@ import {
 import stateOutput from './stateOutput.js'
 import transactionOutput from './transactionOutput.js'
 
+function getBalance (address) {
+  return web3.eth.getBalance(address).toNumber()
+}
+
 async function contractState (contractInstance) {
-  const fnNames = _.map(filterAbiFunctions(contractInstance.abi, {
+  const fns = filterAbiFunctions(contractInstance.abi, {
     isConstant: true,
     hasInputs: false
-  }), fn => fn.name)
-  const results = await Promise.all(_.map(fnNames, (fnName) => {
-    return contractInstance[fnName].call()
+  })
+  const results = await Promise.all(_.map(fns, (fn) => {
+    return contractInstance[fn.name].call()
   }))
   let props = {}
-  for (let i = 0; i < fnNames.length; i++) {
-    props[fnNames[i]] = results[i]
+  for (let i = 0; i < fns.length; i++) {
+    let result = results[i]
+    if (fns[i].outputs && fns[i].outputs[0] && fns[i].outputs[0].type === 'address') {
+      result = {
+        address: result,
+        balance: getBalance(result)
+      }
+    }
+    props[fns[i].name] = result
   }
-  const balance = web3.eth.getBalance(contractInstance.address).toNumber()
+  const balance = getBalance(contractInstance.address)
   const { address } = contractInstance
   const { contract_name: name } = contractInstance.constructor._json
 

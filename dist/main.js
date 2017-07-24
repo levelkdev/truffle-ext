@@ -43,8 +43,19 @@ function underline(str) {
   }).join('');
 }
 
+function formatVal(val) {
+  if (val && val.address) {
+    val = `(
+      Address: ${val.address}
+      Balance: ${val.balance}
+    )`;
+  }
+  return val;
+}
+
 function outputProps(props) {
   return _.map(props, (val, prop) => {
+    val = formatVal(val);
     return `    ${prop}: ${val}`;
   }).join('\n');
 }
@@ -83,20 +94,25 @@ var transactionOutput = (tx => {
 
 let contractState = (() => {
   var _ref = _asyncToGenerator(function* (contractInstance) {
-    const fnNames = _.map(filterAbiFunctions(contractInstance.abi, {
+    const fns = filterAbiFunctions(contractInstance.abi, {
       isConstant: true,
       hasInputs: false
-    }), function (fn) {
-      return fn.name;
     });
-    const results = yield Promise.all(_.map(fnNames, function (fnName) {
-      return contractInstance[fnName].call();
+    const results = yield Promise.all(_.map(fns, function (fn) {
+      return contractInstance[fn.name].call();
     }));
     let props = {};
-    for (let i = 0; i < fnNames.length; i++) {
-      props[fnNames[i]] = results[i];
+    for (let i = 0; i < fns.length; i++) {
+      let result = results[i];
+      if (fns[i].outputs && fns[i].outputs[0] && fns[i].outputs[0].type === 'address') {
+        result = {
+          address: result,
+          balance: getBalance(result)
+        };
+      }
+      props[fns[i].name] = result;
     }
-    const balance = web3.eth.getBalance(contractInstance.address).toNumber();
+    const balance = getBalance(contractInstance.address);
     const address = contractInstance.address;
     const name = contractInstance.constructor._json.contract_name;
 
@@ -118,6 +134,10 @@ let contractState = (() => {
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 /* global web3 */
+
+function getBalance(address) {
+  return web3.eth.getBalance(address).toNumber();
+}
 
 function wrapTxFunction(contractInstance, fnName) {
   const txFn = contractInstance[fnName];
