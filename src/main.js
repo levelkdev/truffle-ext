@@ -2,14 +2,17 @@
 
 import _ from 'lodash'
 import {
-  constantFunctionNames,
+  filterAbiFunctions,
   transactionFunctionNames
 } from './abiParser'
 import stateOutput from './stateOutput.js'
 import transactionOutput from './transactionOutput.js'
 
 async function contractState (contractInstance) {
-  const fnNames = constantFunctionNames(contractInstance.abi)
+  const fnNames = _.map(filterAbiFunctions(contractInstance.abi, {
+    isConstant: true,
+    hasInputs: false
+  }), fn => fn.name)
   const results = await Promise.all(_.map(fnNames, (fnName) => {
     return contractInstance[fnName].call()
   }))
@@ -56,15 +59,17 @@ function wrapContractInstance (contractInstance) {
   )
 }
 
-function newContractFn (newFn) {
+function wrapContractFn (fn) {
   return async function () {
-    const c = await newFn.apply(this, Array.prototype.slice.call(arguments))
+    const c = await fn.apply(this, Array.prototype.slice.call(arguments))
     return wrapContractInstance(c)
   }
 }
 
 function wrapContractArtifact (contractArtifact) {
-  contractArtifact.new = newContractFn(contractArtifact.new)
+  _.forEach(['new', 'at'], (fnName) => {
+    contractArtifact[fnName] = wrapContractFn(contractArtifact[fnName])
+  })
   return contractArtifact
 }
 

@@ -6,12 +6,35 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var _ = _interopDefault(require('lodash'));
 
-const constantFunctionNames = abi => {
-  return _.map(_.filter(abi, { type: 'function', constant: true }), o => o.name);
+const filterAbiFunctions = function filterAbiFunctions(abi) {
+  let opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  const isConstant = opts.isConstant,
+        hasInputs = opts.hasInputs;
+
+  let filterPred = fn => {
+    if (fn.type !== 'function') {
+      return false;
+    }
+    if (isConstant !== undefined && fn.constant !== isConstant) {
+      return false;
+    }
+    if (hasInputs !== undefined) {
+      if (hasInputs === true && (!fn.inputs || fn.inputs.length === 0)) {
+        return false;
+      }
+      if (hasInputs === false && fn.inputs && fn.inputs.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+  return _.filter(abi, filterPred);
 };
 
+
+
 const transactionFunctionNames = abi => {
-  return _.map(_.filter(abi, { type: 'function', constant: false }), o => o.name);
+  return _.map(filterAbiFunctions(abi, { isConstant: false }), o => o.name);
 };
 
 function underline(str) {
@@ -60,7 +83,12 @@ var transactionOutput = (tx => {
 
 let contractState = (() => {
   var _ref = _asyncToGenerator(function* (contractInstance) {
-    const fnNames = constantFunctionNames(contractInstance.abi);
+    const fnNames = _.map(filterAbiFunctions(contractInstance.abi, {
+      isConstant: true,
+      hasInputs: false
+    }), function (fn) {
+      return fn.name;
+    });
     const results = yield Promise.all(_.map(fnNames, function (fnName) {
       return contractInstance[fnName].call();
     }));
@@ -122,15 +150,17 @@ function wrapContractInstance(contractInstance) {
     })() });
 }
 
-function newContractFn(newFn) {
+function wrapContractFn(fn) {
   return _asyncToGenerator(function* () {
-    const c = yield newFn.apply(this, Array.prototype.slice.call(arguments));
+    const c = yield fn.apply(this, Array.prototype.slice.call(arguments));
     return wrapContractInstance(c);
   });
 }
 
 function wrapContractArtifact(contractArtifact) {
-  contractArtifact.new = newContractFn(contractArtifact.new);
+  _.forEach(['new', 'at'], fnName => {
+    contractArtifact[fnName] = wrapContractFn(contractArtifact[fnName]);
+  });
   return contractArtifact;
 }
 
