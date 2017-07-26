@@ -1,5 +1,6 @@
 import { test, given } from 'sazerac'
 import {
+  findAbiFunction,
   filterAbiFunctions,
   constantFunctionNames,
   transactionFunctionNames,
@@ -77,4 +78,11 @@ test(filterAbiFunctions, () => {
     .describe('when given no options')
     .should('should return all functions')
     .expect([mockAbi[0], mockAbi[1], mockAbi[2]])
+})
+
+test(findAbiFunction, () => {
+  given(mockAbi, 'fnOne')
+    .describe('when given abi and function name')
+    .should('should return the function def from abi')
+    .expect(mockAbi[0])
 })

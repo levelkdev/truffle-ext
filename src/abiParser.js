@@ -22,6 +22,10 @@ export const filterAbiFunctions = (abi, opts = {}) => {
   return _.filter(abi, filterPred)
 }
 
+export const findAbiFunction = (abi, fnName) => {
+  return _.find(abi, { name: fnName })
+}
+
 export const constantFunctionNames = (abi) => {
   return _.map(filterAbiFunctions(abi, { isConstant: true }), o => o.name)
 }
@@ -31,5 +35,5 @@ export const transactionFunctionNames = (abi) => {
 }
 
 export const getOutputType = (abi, fnName) => {
-  return _.find(abi, { name: fnName }).outputs[0].type
+  return findAbiFunction(abi, fnName).outputs[0].type
 }

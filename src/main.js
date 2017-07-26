@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import {
+  findAbiFunction,
   filterAbiFunctions,
   transactionFunctionNames
 } from './abiParser'
@@ -7,19 +8,29 @@ import transactionOutput from './transactionOutput'
 import getBalance from './getBalance'
 import stateProps from './state/props'
 import stateOutput from './state/output'
+import checkFnCalls from './checkFnCalls'
 
-async function contractState (contractInstance, opts) {
-  const fns = filterAbiFunctions(contractInstance.abi, {
+async function contractState (contractInstance, opts = { calls: [] }) {
+  const fnDefs = filterAbiFunctions(contractInstance.abi, {
     isConstant: true,
     hasInputs: false
   })
-  const results = await Promise.all(_.map(fns, (fn) => {
-    return contractInstance[fn.name].call()
-  }))
-  const fnCalls = _.map(fns, (v, i) => {
-    fns[i].result = results[i]
-    return fns[i]
+
+  checkFnCalls(opts.calls, contractInstance.abi)
+  opts.calls = _.map(opts.calls, (call) => _.assign(call, findAbiFunction(call.name)))
+
+  let fnCalls = _.concat(fnDefs, opts.calls)
+
+  const results = await Promise.all(
+    _.map(fnCalls, (fn) => {
+      return contractInstance[fn.name].call.apply(null, fn.args || [])
+    })
+  )
+  fnCalls = _.map(fnCalls, (v, i) => {
+    fnCalls[i].result = results[i]
+    return fnCalls[i]
   })
+
   const balance = getBalance(contractInstance.address)
   const { address } = contractInstance
   const { contract_name: name } = contractInstance.constructor._json
@@ -76,4 +87,11 @@ function wrapContractArtifact (contractArtifact) {
 
 export function requireContract (contractArtifact) {
   return wrapContractArtifact(contractArtifact)
+}
+
+export function stateCall () {
+  return {
+    name: arguments[0],
+    args: Array.prototype.slice.call(arguments, 1)
+  }
 }
