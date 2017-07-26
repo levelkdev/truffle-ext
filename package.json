@@ -11,6 +11,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "chai": "^4.1.0",
     "lodash": "^4.17.4",
     "sazerac": "^0.4.1",
     "standard": "^10.0.2",

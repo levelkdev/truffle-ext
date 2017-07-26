@@ -1,18 +1,14 @@
-/* global web3 */
-
 import _ from 'lodash'
 import {
   filterAbiFunctions,
   transactionFunctionNames
 } from './abiParser'
-import stateOutput from './stateOutput.js'
-import transactionOutput from './transactionOutput.js'
+import transactionOutput from './transactionOutput'
+import getBalance from './getBalance'
+import stateProps from './state/props'
+import stateOutput from './state/output'
 
-function getBalance (address) {
-  return web3.eth.getBalance(address).toNumber()
-}
-
-async function contractState (contractInstance) {
+async function contractState (contractInstance, opts) {
   const fns = filterAbiFunctions(contractInstance.abi, {
     isConstant: true,
     hasInputs: false
@@ -20,20 +16,14 @@ async function contractState (contractInstance) {
   const results = await Promise.all(_.map(fns, (fn) => {
     return contractInstance[fn.name].call()
   }))
-  let props = {}
-  for (let i = 0; i < fns.length; i++) {
-    let result = results[i]
-    if (fns[i].outputs && fns[i].outputs[0] && fns[i].outputs[0].type === 'address') {
-      result = {
-        address: result,
-        balance: getBalance(result)
-      }
-    }
-    props[fns[i].name] = result
-  }
+  const fnCalls = _.map(fns, (v, i) => {
+    fns[i].result = results[i]
+    return fns[i]
+  })
   const balance = getBalance(contractInstance.address)
   const { address } = contractInstance
   const { contract_name: name } = contractInstance.constructor._json
+  const props = stateProps(fnCalls)
 
   return {
     balance,
@@ -66,7 +56,7 @@ function wrapContractInstance (contractInstance) {
   return _.assign(
     contractInstance,
     transactionFns(contractInstance),
-    { state: async () => contractState(contractInstance) }
+    { state: async (opts = {}) => contractState(contractInstance, opts) }
   )
 }
 
