@@ -1,17 +1,17 @@
 import getBalance from '../getBalance'
 
-function getFormattedResult (fnCall) {
+function getFormattedResult (web3, fnCall) {
   let { result } = fnCall
   if (fnCall.outputs && fnCall.outputs[0] && fnCall.outputs[0].type === 'address') {
     result = {
       address: result,
-      balance: getBalance(result)
+      balance: getBalance(web3, result)
     }
   }
   return result
 }
 
-export default (fnCalls) => {
+export default (web3, fnCalls) => {
   let props = {}
   for (let i = 0; i < fnCalls.length; i++) {
     const fnCall = fnCalls[i]
@@ -21,10 +21,10 @@ export default (fnCalls) => {
       }
       props[fnCall.name].calls.push({
         args: fnCall.args,
-        result: getFormattedResult(fnCall)
+        result: getFormattedResult(web3, fnCall)
       })
     } else {
-      props[fnCall.name] = getFormattedResult(fnCall)
+      props[fnCall.name] = getFormattedResult(web3, fnCall)
     }
   }
   return props

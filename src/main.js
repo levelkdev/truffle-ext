@@ -10,6 +10,8 @@ import stateProps from './state/props'
 import stateOutput from './state/output'
 import checkFnCalls from './checkFnCalls'
 
+let web3
+
 function callFromArgs () {
   return {
     name: arguments[0],
@@ -45,10 +47,10 @@ async function contractState (contractInstance, opts = {}) {
     return fnCalls[i]
   })
 
-  const balance = getBalance(contractInstance.address)
+  const balance = getBalance(web3, contractInstance.address)
   const { address } = contractInstance
   const { contract_name: name } = contractInstance.constructor._json
-  const props = stateProps(fnCalls)
+  const props = stateProps(web3, fnCalls)
 
   return {
     balance,
@@ -99,6 +101,11 @@ function wrapContractArtifact (contractArtifact) {
   return contractArtifact
 }
 
-export function requireContract (contractArtifact) {
+function requireContract (contractArtifact) {
   return wrapContractArtifact(contractArtifact)
+}
+
+export default (_web3) => {
+  web3 = _web3
+  return { requireContract }
 }

@@ -1,5 +1,3 @@
-/* global web3 */
-
-export default function getBalance (address) {
+export default function getBalance (web3, address) {
   return web3.eth.getBalance(address).toNumber()
 }

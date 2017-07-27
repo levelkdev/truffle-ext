@@ -6,6 +6,7 @@ import { test, given } from 'sazerac'
 import props from './props'
 import * as getBalance from '../getBalance'
 
+const web3 = {}
 getBalance.default = jest.fn(() => 'mock_balance')
 
 const mockFnCalls = [
@@ -38,7 +39,7 @@ const mockFnCalls = [
 ]
 
 test(props, () => {
-  given(mockFnCalls)
+  given(web3, mockFnCalls)
     .describe('when given an array of fn calls')
     .assert('should return map indexed by fn call names', (ret) => {
       assert.deepEqual(_.keys(ret), [
