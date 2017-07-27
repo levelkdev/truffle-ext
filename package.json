@@ -30,7 +30,7 @@
   },
   "scripts": {
     "build": "node tools/build",
-    "check": "standard",
+    "lint": "standard",
     "test": "jest"
   },
   "standard": {

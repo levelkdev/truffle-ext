@@ -10,14 +10,28 @@ import stateProps from './state/props'
 import stateOutput from './state/output'
 import checkFnCalls from './checkFnCalls'
 
-async function contractState (contractInstance, opts = { calls: [] }) {
+function callFromArgs () {
+  return {
+    name: arguments[0],
+    args: Array.prototype.slice.call(arguments, 1)
+  }
+}
+
+async function contractState (contractInstance, opts = {}) {
+  if (!opts.calls) {
+    opts.calls = []
+  }
+
   const fnDefs = filterAbiFunctions(contractInstance.abi, {
     isConstant: true,
     hasInputs: false
   })
 
-  checkFnCalls(opts.calls, contractInstance.abi)
-  opts.calls = _.map(opts.calls, (call) => _.assign(call, findAbiFunction(call.name)))
+  if (opts.calls.length > 0) {
+    opts.calls = _.map(opts.calls, (call) => callFromArgs.apply(null, call))
+    checkFnCalls(opts.calls, contractInstance.abi)
+    opts.calls = _.map(opts.calls, (call) => _.assign(call, findAbiFunction(call.name)))
+  }
 
   let fnCalls = _.concat(fnDefs, opts.calls)
 
@@ -87,11 +101,4 @@ function wrapContractArtifact (contractArtifact) {
 
 export function requireContract (contractArtifact) {
   return wrapContractArtifact(contractArtifact)
-}
-
-export function stateCall () {
-  return {
-    name: arguments[0],
-    args: Array.prototype.slice.call(arguments, 1)
-  }
 }

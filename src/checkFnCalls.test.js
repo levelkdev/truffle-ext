@@ -1,11 +1,10 @@
 import { test, given } from 'sazerac'
 import checkFnCalls from './checkFnCalls'
-import { stateCall } from './main'
 
 const mockCalls = [
-  stateCall('mock_fn_0', 'pizza', 'cheese'),
-  stateCall('mock_fn_0', 'pepperoni', 'mushroom'),
-  stateCall('mock_fn_1', 'bread')
+  { name: 'mock_fn_0', args: ['pizza', 'cheese'] },
+  { name: 'mock_fn_0', args: ['pepperoni', 'mushroom'] },
+  { name: 'mock_fn_1', args: ['bread'] }
 ]
 
 const mockAbiNoErrs = [
