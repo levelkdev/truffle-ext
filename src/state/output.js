@@ -11,8 +11,7 @@ function formatVal (val) {
     if (val.address) {
       val = `
       Address: ${val.address}
-      Balance: ${val.balance}
-`
+      Balance: ${val.balance}`
     }
   }
   return val
