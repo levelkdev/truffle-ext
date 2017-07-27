@@ -9,10 +9,10 @@ function underline (str) {
 function formatVal (val) {
   if (val) {
     if (val.address) {
-      val = `(
-        Address: ${val.address}
-        Balance: ${val.balance}
-      )`
+      val = `
+      Address: ${val.address}
+      Balance: ${val.balance}
+`
     }
   }
   return val
@@ -27,7 +27,7 @@ function expandProps (props) {
         expandedProps[`${prop}(${argsStr})`] = call.result
       })
     } else {
-      expandedProps[prop] = val
+      expandedProps[`${prop}()`] = val
     }
   })
   return expandedProps
@@ -47,7 +47,7 @@ export default (name, address, balance, props) => {
   ${underline(name)}
   Address:     ${address}
   Balance:     ${balance}
-  Props:
+  Calls:
 ${outputProps(props)}
 `
 }
