@@ -95,7 +95,7 @@ function wrapContractFn (fn) {
 }
 
 function wrapContractArtifact (contractArtifact) {
-  _.forEach(['new', 'at'], (fnName) => {
+  _.forEach(['new', 'at', 'deployed'], (fnName) => {
     contractArtifact[fnName] = wrapContractFn(contractArtifact[fnName])
   })
   return contractArtifact
