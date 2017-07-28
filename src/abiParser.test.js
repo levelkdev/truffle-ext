@@ -1,5 +1,6 @@
 import { test, given } from 'sazerac'
 import {
+  filterAbiEvents,
   findAbiFunction,
   filterAbiFunctions,
   constantFunctionNames,
@@ -32,6 +33,18 @@ const mockAbi = [
   { type: 'notFunction' }
 ]
 
+const mockAbiEvts = [
+  {
+    name: 'Event1',
+    type: 'event'
+  },
+  {
+    name: 'Event2',
+    type: 'event'
+  },
+  { type: 'not-event' }
+]
+
 test(constantFunctionNames, () => {
   given(mockAbi)
     .describe('when given abi')
@@ -51,6 +64,13 @@ test(getOutputType, () => {
     .describe('when given abi and function name')
     .should('should return output type')
     .expect('uint256')
+})
+
+test(filterAbiEvents, () => {
+  given(mockAbiEvts)
+    .describe('when given abi with events')
+    .should('should return the events')
+    .expect([mockAbiEvts[0], mockAbiEvts[1]])
 })
 
 test(filterAbiFunctions, () => {

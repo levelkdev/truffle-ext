@@ -22,6 +22,10 @@ export const filterAbiFunctions = (abi, opts = {}) => {
   return _.filter(abi, filterPred)
 }
 
+export const filterAbiEvents = (abi) => {
+  return _.filter(abi, { type: 'event' })
+}
+
 export const findAbiFunction = (abi, fnName) => {
   return _.find(abi, { name: fnName })
 }
