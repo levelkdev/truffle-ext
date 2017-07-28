@@ -1,14 +1,24 @@
 import _ from 'lodash'
 
+function argsOutput (evt, args) {
+  if (!args) {
+    return `
+  ${evt} ()
+`
+  } else {
+    return `
+  ${evt} (
+${args}  )
+`
+  }
+}
+
 function logEvents (events) {
   const evtsStr = _.map(events, (e) => {
     const argsStr = _.map(e.args, (val, param) => {
       return `    ${param}: ${val}\n`
     }).join('')
-    return `
-  ${e.event} (
-${argsStr}  )
-`
+    return argsOutput(e.event, argsStr)
   }).join('')
 
   return `
