@@ -4,11 +4,12 @@ import {
   filterAbiFunctions,
   transactionFunctionNames
 } from './abiParser'
-import transactionOutput from './transactionOutput'
+import { transactionOutput } from './eventsOutput'
 import getBalance from './getBalance'
 import stateProps from './state/props'
 import stateOutput from './state/output'
 import checkFnCalls from './checkFnCalls'
+import logAllEvents from './logAllEvents'
 
 let web3
 
@@ -83,7 +84,10 @@ function wrapContractInstance (contractInstance) {
   return _.assign(
     contractInstance,
     transactionFns(contractInstance),
-    { state: async (opts = {}) => contractState(contractInstance, opts) }
+    {
+      state: async (opts = {}) => contractState(contractInstance, opts),
+      logAllEvents: () => { logAllEvents(contractInstance) }
+    }
   )
 }
 
