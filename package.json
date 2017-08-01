@@ -12,11 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "chai": "^4.1.0",
-    "lodash": "^4.17.4",
-    "sazerac": "^0.4.1",
-    "standard": "^10.0.2",
-    "zeppelin-solidity": "^1.2.0"
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -25,9 +21,12 @@
     "babel-preset-stage-1": "^6.18.0",
     "babel-preset-stage-2": "^6.18.0",
     "babel-preset-stage-3": "^6.17.0",
+    "chai": "^4.1.0",
     "jest": "^19.0.2",
     "rollup": "^0.45.2",
-    "rollup-plugin-babel": "^2.7.1"
+    "rollup-plugin-babel": "^2.7.1",
+    "sazerac": "^0.4.1",
+    "standard": "^10.0.2"
   },
   "scripts": {
     "build": "node tools/build",
