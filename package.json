@@ -5,6 +5,7 @@
     "email": "mfcalvanese@gmail.com",
     "name": "Mike Calvanese"
   },
+  "description": "Extends truffle artifacts to provide state and event logging",
   "main": "main.js",
   "keywords": [
     "truffle"
