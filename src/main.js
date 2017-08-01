@@ -11,7 +11,7 @@ import stateOutput from './state/output'
 import checkFnCalls from './checkFnCalls'
 import logAllEvents from './logAllEvents'
 
-let web3
+let web3, opts
 
 function callFromArgs () {
   return {
@@ -94,7 +94,11 @@ function wrapContractInstance (contractInstance) {
 function wrapContractFn (fn) {
   return async function () {
     const c = await fn.apply(this, Array.prototype.slice.call(arguments))
-    return wrapContractInstance(c)
+    const contractInstance = wrapContractInstance(c)
+    if (opts.logEvents) {
+      contractInstance.logAllEvents()
+    }
+    return contractInstance
   }
 }
 
@@ -109,7 +113,8 @@ function requireContract (contractArtifact) {
   return wrapContractArtifact(contractArtifact)
 }
 
-export default (_web3) => {
+export default (_web3, _opts = {}) => {
   web3 = _web3
+  opts = _opts
   return { requireContract }
 }
