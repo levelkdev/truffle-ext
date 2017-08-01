@@ -1,4 +1,4 @@
-# trestjs
+# truffle-ext
 
 Extends truffle artifacts to provide state and event logging
 
@@ -8,11 +8,11 @@ Extends truffle artifacts to provide state and event logging
 
 ## Usage
 
-import the `trestjs` function and call it with your `web3` instance. Use the `requireContract` function by passing it a truffle contract artifact.
+import the `truffle-ext` function and call it with your `web3` instance. Use the `requireContract` function by passing it a truffle contract artifact.
 
 ```js
-  import trestjs from 'trestjs'
-  const { requireContract } = trestjs(web3)
+  import truffleExt from 'truffle-ext'
+  const { requireContract } = truffleExt(web3)
   const MyContract = requireContract(
     artifacts.require('./MyContract.sol')
   )
@@ -122,10 +122,10 @@ Log all events for an instance of a contract by calling `logAllEvents()`
   myContract.logAllEvents()
 ```
 
-Or log all events for all contract instances by calling `trestjs` with `logEvents: true` option
+Or log all events for all contract instances by calling `truffleExt` with `logEvents: true` option
 
 ```js
-  const { requireContract } = trestjs(web3, { logEvents: true })
+  const { requireContract } = truffleExt(web3, { logEvents: true })
 ```
 
 ```
