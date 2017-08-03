@@ -25,6 +25,9 @@ async function contractState (contractInstance, opts = {}) {
     opts.calls = []
   }
 
+  const { address } = contractInstance
+  const name = getContractName(contractInstance)
+
   const fnDefs = filterAbiFunctions(contractInstance.abi, {
     isConstant: true,
     hasInputs: false
@@ -38,19 +41,22 @@ async function contractState (contractInstance, opts = {}) {
 
   let fnCalls = _.concat(fnDefs, opts.calls)
 
-  const results = await Promise.all(
-    _.map(fnCalls, (fn) => {
-      return contractInstance[fn.name].call.apply(null, fn.args || [])
-    })
-  )
+  let results
+  try {
+    results = await Promise.all(
+      _.map(fnCalls, (fn) => {
+        return contractInstance[fn.name].call.apply(contractInstance, fn.args || [])
+      })
+    )
+  } catch (err) {
+    console.log(`Error getting state for ${name}: `, err)
+  }
   fnCalls = _.map(fnCalls, (v, i) => {
     fnCalls[i].result = results[i]
     return fnCalls[i]
   })
 
   const balance = getBalance(web3, contractInstance.address)
-  const { address } = contractInstance
-  const { contract_name: name } = contractInstance.constructor._json
   const props = stateProps(web3, fnCalls)
 
   return {
@@ -62,8 +68,14 @@ async function contractState (contractInstance, opts = {}) {
 
 function wrapTxFunction (contractInstance, fnName) {
   const txFn = contractInstance[fnName]
+  const contractName = getContractName(contractInstance)
   return async function () {
-    let tx = await txFn.apply(this, Array.prototype.slice.call(arguments))
+    let tx
+    try {
+      tx = await txFn.apply(contractInstance, Array.prototype.slice.call(arguments))
+    } catch (err) {
+      console.log(`Error executing transaction ${contractName}.${fnName}: `, err)
+    }
     return _.assign(
       tx,
       { output: () => transactionOutput(tx) }
@@ -111,6 +123,10 @@ function wrapContractArtifact (contractArtifact) {
 
 function requireContract (contractArtifact) {
   return wrapContractArtifact(contractArtifact)
+}
+
+function getContractName (contractInstance) {
+  return contractInstance.constructor._json.contract_name
 }
 
 export default (_web3, _opts = {}) => {
