@@ -42,15 +42,11 @@ async function contractState (contractInstance, opts = {}) {
   let fnCalls = _.concat(fnDefs, opts.calls)
 
   let results
-  try {
-    results = await Promise.all(
-      _.map(fnCalls, (fn) => {
-        return contractInstance[fn.name].call.apply(contractInstance, fn.args || [])
-      })
-    )
-  } catch (err) {
-    console.log(`Error getting state for ${name}: `, err)
-  }
+  results = await Promise.all(
+    _.map(fnCalls, (fn) => {
+      return contractInstance[fn.name].call.apply(contractInstance, fn.args || [])
+    })
+  )
   fnCalls = _.map(fnCalls, (v, i) => {
     fnCalls[i].result = results[i]
     return fnCalls[i]
@@ -68,14 +64,8 @@ async function contractState (contractInstance, opts = {}) {
 
 function wrapTxFunction (contractInstance, fnName) {
   const txFn = contractInstance[fnName]
-  const contractName = getContractName(contractInstance)
   return async function () {
-    let tx
-    try {
-      tx = await txFn.apply(contractInstance, Array.prototype.slice.call(arguments))
-    } catch (err) {
-      console.log(`Error executing transaction ${contractName}.${fnName}: `, err)
-    }
+    const tx = await txFn.apply(contractInstance, Array.prototype.slice.call(arguments))
     return _.assign(
       tx,
       { output: () => transactionOutput(tx) }
