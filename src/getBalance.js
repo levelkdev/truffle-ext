@@ -1,3 +1,11 @@
-export default function getBalance (web3, address) {
-  return web3.eth.getBalance(address).toNumber()
+export default async (web3, address) => {
+  return new Promise((resolve, reject) => {
+    web3.eth.getBalance(address, function (err, result) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+  })
 }
