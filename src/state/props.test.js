@@ -1,4 +1,4 @@
-/* global jest, describe, it, expect */
+/* global jest, describe, it */
 
 import { assert } from 'chai'
 import _ from 'lodash'
