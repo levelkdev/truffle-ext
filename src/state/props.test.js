@@ -1,8 +1,7 @@
-/* global jest */
+/* global jest, describe, it, expect */
 
 import { assert } from 'chai'
 import _ from 'lodash'
-import { test, given } from 'sazerac'
 import props from './props'
 import * as getBalance from '../getBalance'
 
@@ -38,10 +37,9 @@ const mockFnCalls = [
   }
 ]
 
-test(props, () => {
-  given(web3, mockFnCalls)
-    .describe('when given an array of fn calls')
-    .assert('should return map indexed by fn call names', (ret) => {
+describe('when given an array of fn calls', () => {
+  it('should return map indexed by fn call names', () => {
+    return props(web3, mockFnCalls).then((ret) => {
       assert.deepEqual(_.keys(ret), [
         'mock_call_0',
         'mock_call_1',
@@ -49,23 +47,36 @@ test(props, () => {
         'mock_call_3'
       ])
     })
-    .assert('should return calls array for functions with args', (ret) => {
+  })
+
+  it('should return calls array for functions with args', () => {
+    return props(web3, mockFnCalls).then((ret) => {
       assert.deepEqual(ret['mock_call_2'].calls, [
         { args: ['arg_1'], result: 'mock_call_2_res_0' },
         { args: ['arg_2'], result: 'mock_call_2_res_1' }
       ])
     })
-    .assert('should return raw result for non address types', (ret) => {
+  })
+
+  it('should return raw result for non address types', () => {
+    return props(web3, mockFnCalls).then((ret) => {
       assert.deepEqual(ret['mock_call_0'], 'mock_res_0')
     })
-    .assert('should return balance and address for address type result', (ret) => {
+  })
+
+  it('should return balance and address for address type result', () => {
+    return props(web3, mockFnCalls).then((ret) => {
       assert.deepEqual(ret['mock_call_1'].address, 'mock_res_1')
       assert.deepEqual(ret['mock_call_1'].balance, 'mock_balance')
     })
-    .assert('should return balance and address for address type within ' +
-              ' functions with args results',
-    (ret) => {
+  })
+
+  it('should return balance and address for address type within ' +
+            ' functions with args results',
+  () => {
+    return props(web3, mockFnCalls).then((ret) => {
       assert.deepEqual(ret['mock_call_3'].calls[0].result.address, 'mock_res_3')
       assert.deepEqual(ret['mock_call_3'].calls[0].result.balance, 'mock_balance')
     })
+  })
 })

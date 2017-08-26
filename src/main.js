@@ -53,7 +53,7 @@ async function contractState (contractInstance, opts = {}) {
   })
 
   const balance = await getBalance(web3, contractInstance.address)
-  const props = stateProps(web3, fnCalls)
+  const props = await stateProps(web3, fnCalls)
 
   return {
     balance,
