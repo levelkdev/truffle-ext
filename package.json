@@ -37,6 +37,11 @@
     "lint": "standard",
     "test": "jest"
   },
+  "jest": {
+    "roots": [
+      "src"
+    ]
+  },
   "standard": {
     "ignore": [
       "dist/**",
