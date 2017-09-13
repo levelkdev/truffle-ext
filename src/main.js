@@ -64,13 +64,15 @@ async function contractState (contractInstance, opts = {}) {
 
 function wrapTxFunction (contractInstance, fnName) {
   const txFn = contractInstance[fnName]
-  return async function () {
+  const fn = async function () {
     const tx = await txFn.apply(contractInstance, Array.prototype.slice.call(arguments))
     return _.assign(
       tx,
       { output: () => transactionOutput(tx) }
     )
   }
+  fn.call = txFn.call
+  return fn
 }
 
 function transactionFns (contractInstance) {
